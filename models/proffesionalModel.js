@@ -13,7 +13,7 @@ exports.proffesionalModel = personModel.discriminator('proffesionals', proffesio
 
 exports.proffesionalValid = (_reqBody) => {
     let joiSchemaProffesional = joiSchemaPerson.keys({
-        area: Joi.string().min(2).max(99).required(),
+        area: Joi.string().valid('center', 'jerusalem', 'north' ,'south').required(),
         category: Joi.string().min(2).max(99).required(),
         event_type: Joi.string().min(2).max(99).required(),
         cost: Joi.number().required()

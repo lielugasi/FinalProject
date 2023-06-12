@@ -25,7 +25,7 @@ exports.eventModel = mongoose.model("events", eventSchema);
 
 exports.eventValid = (_reqBody) => {
     joiSchemaEvent = Joi.object({
-        type:Joi.string().valid('value1', 'value2', 'value3').required(),
+        type:Joi.string().valid('wedding').required(),
         location: Joi.string().min(2).max(999).required(),
         date: Joi.date().required()
     });
