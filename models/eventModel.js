@@ -2,7 +2,9 @@ const mongoose = require('mongoose');
 const Joi = require("joi");
 
 const eventSchema = new mongoose.Schema({
-    type: String,
+    type:{
+        type: String, enum:['wedding']
+    },
     location: String,
     date: Date,
     status: {
@@ -21,24 +23,11 @@ exports.eventModel = mongoose.model("events", eventSchema);
 
 
 
-exports.createToken = (_id, role) => {
-    let token = jwt.sign({ _id, role }, config.tokenSecret, { expiresIn: "60mins" });
-    return token;
-}
-exports.joiSchemaevent = Joi.object({
-    firstName: Joi.string().min(2).max(99).required(),
-    lastName: Joi.string().min(2).max(99).required(),
-    email: Joi.string().min(2).max(9999).required(),
-    password: Joi.string().min(2).max(99999).required(),
-    phone: Joi.string().length(10).pattern(/^[0-9]+$/).required()
-})
 exports.eventValid = (_reqBody) => {
-    return joiSchemaevent.validate(_reqBody);
-}
-exports.eventValidLogin = (_reqBody) => {
-    let joiSchema = Joi.object({
-        email: Joi.string().min(2).max(9999).required(),
-        password: Joi.string().min(2).max(99999).required()
-    })
-    return joiSchema.validate(_reqBody);
+    joiSchemaEvent = Joi.object({
+        type:Joi.string().valid('value1', 'value2', 'value3').required(),
+        location: Joi.string().min(2).max(999).required(),
+        date: Joi.date().required()
+    });
+    return joiSchemaEvent.validate(_reqBody);
 }

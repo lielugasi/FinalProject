@@ -2,7 +2,9 @@ const mongoose = require('mongoose');
 const Joi = require("joi");
 const {joiSchemaPerson } = require('./personModel');
 const proffesionalSchema = new mongoose.Schema({
-    area:String,
+    area:{
+        type: String, enum:['center', 'jerusalem', 'north' ,'south']
+    },
     category:String,
     event_type:String,
     cost:Number
