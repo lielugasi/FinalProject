@@ -7,7 +7,11 @@ const proffesionalSchema = new mongoose.Schema({
     },
     category:String,
     event_type:String,
-    cost:Number
+    cost:Number,
+    events:  [{
+        type: Schema.Types.ObjectId,
+        ref: 'events',
+    }],
 })
 exports.proffesionalModel = personModel.discriminator('proffesionals', proffesionalSchema);
 

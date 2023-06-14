@@ -6,7 +6,11 @@ const clientSchema = new mongoose.Schema({
         city: String,
         street: String,
         building: Number
-    }
+    },
+    events:  [{
+        type: Schema.Types.ObjectId,
+        ref: 'events',
+    }],
 })
 exports.clientModel = personModel.discriminator('clients', clientSchema);
 
