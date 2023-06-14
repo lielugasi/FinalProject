@@ -17,7 +17,7 @@ const personSchema = new mongoose.Schema({
         type: String, default: "client"
     }
 })
-exports.personModel = mongoose.model("persons", personSchema);
+exports.PersonModel = mongoose.model("persons", personSchema);
 
 
 

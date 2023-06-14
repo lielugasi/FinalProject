@@ -19,7 +19,7 @@ const eventSchema = new mongoose.Schema({
         ref: 'professionals',
     }],
 })
-exports.eventModel = mongoose.model("events", eventSchema);
+exports.EventModel = mongoose.model("events", eventSchema);
 
 
 

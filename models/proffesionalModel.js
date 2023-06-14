@@ -13,7 +13,7 @@ const proffesionalSchema = new mongoose.Schema({
         ref: 'events',
     }],
 })
-exports.proffesionalModel = personModel.discriminator('proffesionals', proffesionalSchema);
+exports.ProffesionalModel = PersonModel.discriminator('proffesionals', proffesionalSchema);
 
 exports.proffesionalValid = (_reqBody) => {
     let joiSchemaProffesional = joiSchemaPerson.keys({

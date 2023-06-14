@@ -12,7 +12,7 @@ const clientSchema = new mongoose.Schema({
         ref: 'events',
     }],
 })
-exports.clientModel = personModel.discriminator('clients', clientSchema);
+exports.ClientModel = PersonModel.discriminator('clients', clientSchema);
 
 exports.clientValid = (_reqBody) => {
     let joiSchemaClient = joiSchemaPerson.keys({
