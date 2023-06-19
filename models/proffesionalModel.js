@@ -6,7 +6,9 @@ const proffesionalSchema = new mongoose.Schema({
         type: String, enum:['center', 'jerusalem', 'north' ,'south']
     },
     category:String,
-    event_type:String,
+    event_type:[{
+        type: String, enum:['wedding']
+    }],
     cost:Number,
     events:  [{
         type: Schema.Types.ObjectId,
@@ -19,7 +21,7 @@ exports.proffesionalValid = (_reqBody) => {
     let joiSchemaProffesional = joiSchemaPerson.keys({
         area: Joi.string().valid('center', 'jerusalem', 'north' ,'south').required(),
         category: Joi.string().min(2).max(99).required(),
-        event_type: Joi.string().min(2).max(99).required(),
+        event_type: Joi.array().items(Joi.string().valid('wedding')).min(1),
         cost: Joi.number().required()
     });
     return joiSchemaProffesional.validate(_reqBody)
