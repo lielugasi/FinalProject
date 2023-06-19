@@ -1,6 +1,6 @@
 const mongoose = require('mongoose');
 const Joi = require("joi");
-const { joiSchemaPerson } = require('./personModel');
+const { joiSchemauser } = require('./userModel');
 const clientSchema = new mongoose.Schema({
     address: {
         city: String,
@@ -12,10 +12,10 @@ const clientSchema = new mongoose.Schema({
         ref: 'events',
     }],
 })
-exports.ClientModel = PersonModel.discriminator('clients', clientSchema);
+exports.ClientModel = userModel.discriminator('clients', clientSchema);
 
 exports.clientValid = (_reqBody) => {
-    let joiSchemaClient = joiSchemaPerson.keys({
+    let joiSchemaClient = joiSchemauser.keys({
         city: Joi.string().min(2).max(99).required(),
         street: Joi.string().min(2).max(99).required(),
         building: Joi.number().required()

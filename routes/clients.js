@@ -3,14 +3,15 @@ const router = express.Router();
 const bcrypt = require("bcrypt");
 const { auth, authAdmin } = require("../middlewares/auth");
 const { ClientModel, clientValid } = require("../models/clientModel");
-const { personValidLogin } = require("../models/personModel");
+const { userValidLogin } = require("../models/userModel");
 
 //מחזיר את רשימת הלקוחות הרשומים לאתר
 router.get("/clientsList", authAdmin, async (req, res) => {
     let perPage = req.query.perPage || 10;
     try {
         let data = await ClientModel.find({}, { password: 0 })
-            .limit(perPage);
+            .limit(perPage).
+            populate({ path: "events", model: "events" });
         res.json(data);
     }
     catch (err) {
@@ -22,7 +23,8 @@ router.get("/clientsList", authAdmin, async (req, res) => {
 // הצגת פרטי לקוח בודד
 router.get("/myInfo", auth, async (req, res) => {
     try {
-        let client = await ClientModel.findOne({ _id: req.tokenData._id });
+        let client = await ClientModel.findOne({ _id: req.tokenData._id })
+        .populate({ path: "events", model: "events" });
         res.json(client);
     }
     catch (err) {
@@ -52,8 +54,17 @@ router.post("/signUp", async(req,res)=>{
         res.status(500).json({ msg: "err", err });
     }
 })
-
-
+//מחזיר כמה לקוחות פעילים במערכת
+router.get("/count", authAdmin, async (req, res) => {
+    try {
+      let count = await ClientModel.countDocuments({})
+      res.json({ count })
+    }
+    catch (err) {
+      console.log(err)
+      res.status(500).json({ msg: "err", err })
+    }
+  })
 
 //עריכת פרטי לקוח(אדמין עורך את כולם, לקוח עורך את עצמו)
 router.put("/:idEdit", auth, async (req, res) => {

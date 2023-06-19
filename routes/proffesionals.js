@@ -10,7 +10,8 @@ router.get("/proffesionalsList", auth, async (req, res) => {
     let perPage = req.query.perPage || 10;
     try {
         let data = await ProffesionalModel.find({}, { password: 0 })
-            .limit(perPage);
+            .limit(perPage)
+            .populate({ path: "events", model: "events" });
         res.json(data);
     }
     catch (err) {
@@ -22,7 +23,8 @@ router.get("/proffesionalsList", auth, async (req, res) => {
 //הצגת פרטי הבעל מקצוע בודד(לעצמו)
 router.get("/myInfo", auth, async (req, res) => {
     try {
-        let professional = await ProffesionalModel.findOne({ _id: req.tokenData._id });
+        let professional = await ProffesionalModel.findOne({ _id: req.tokenData._id })
+        .populate({ path: "events", model: "events" });
         res.json(professional);
     }
     catch (err) {
@@ -53,8 +55,19 @@ router.post("/signUp", async(req,res)=>{
     }
 }) 
 
-// עריכת פרטי בעל מקצוע(אדמין עורך את כולם, בעל מקצוע עורך את עצמו)
+//מחזיר כמה בעלי מקצוע פעילים במערכת
+router.get("/count", authAdmin, async (req, res) => {
+    try {
+      let count = await ProffesionalModel.countDocuments({})
+      res.json({ count })
+    }
+    catch (err) {
+      console.log(err)
+      res.status(500).json({ msg: "err", err })
+    }
+  })
 
+// עריכת פרטי בעל מקצוע(אדמין עורך את כולם, בעל מקצוע עורך את עצמו)
 router.put("/:idEdit", auth, async (req, res) => {
     let validateBody = proffesionalValid(req.body);
     if (validateBody.error) {
@@ -106,7 +119,6 @@ router.delete("/:idDel", auth, async (req, res) => {
     }
 })
 
-//לבדוק אם צריך לוג איו משותף ללקוח ובעל מקצוע או לכל אחד מהם בנפרד
 // ראוטר של חיפוש בעל מקצוע לפי שם
 // חיפוש בעל מקצוע לפי קטגוריה
 // חיפוש לפי מיקום
