@@ -13,9 +13,9 @@ const userSchema = new mongoose.Schema({
     dateCreated: {
         type: Date, default: Date.now()
     },
-    role: {
-        type: String, default: "client"
-    },
+    // role: {
+    //     type: String, default: "client"
+    // },
     active: {
         type: Boolean, default: true,
     },
@@ -28,7 +28,7 @@ exports.createToken = (_id, role) => {
     let token = jwt.sign({ _id, role }, config.tokenSecret, { expiresIn: "60mins" });
     return token;
 }
-exports.joiSchemauser = Joi.object({
+exports.joiSchemaUser = Joi.object({
     firstName: Joi.string().min(2).max(99).required(),
     lastName: Joi.string().min(2).max(99).required(),
     email: Joi.string().min(2).max(9999).required(),

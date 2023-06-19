@@ -1,6 +1,6 @@
 const mongoose = require('mongoose');
 const Joi = require("joi");
-const { joiSchemauser } = require('./userModel');
+const { joiSchemaUser, userModel  } = require('./userModel');
 const clientSchema = new mongoose.Schema({
     address: {
         city: String,
@@ -8,14 +8,17 @@ const clientSchema = new mongoose.Schema({
         building: Number
     },
     events:  [{
-        type: Schema.Types.ObjectId,
+        type: mongoose.ObjectId,
         ref: 'events',
     }],
+    role: {
+        type: String, default: "client"
+    },
 })
 exports.ClientModel = userModel.discriminator('clients', clientSchema);
 
 exports.clientValid = (_reqBody) => {
-    let joiSchemaClient = joiSchemauser.keys({
+    let joiSchemaClient = joiSchemaUser.keys({
         city: Joi.string().min(2).max(99).required(),
         street: Joi.string().min(2).max(99).required(),
         building: Joi.number().required()

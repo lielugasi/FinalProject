@@ -11,11 +11,11 @@ const eventSchema = new mongoose.Schema({
         type: String, default: "in process"
     },
     client_id: {
-        type: Schema.Types.ObjectId,
+        type: mongoose.ObjectId,
         ref: 'clients',
     },
     proffesionals: [{
-        type: Schema.Types.ObjectId,
+        type: mongoose.ObjectId,
         ref: 'professionals',
     }],
 })

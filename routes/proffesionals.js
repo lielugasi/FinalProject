@@ -35,7 +35,7 @@ router.get("/myInfo", auth, async (req, res) => {
 
 //הרשמה של בעל מקצוע למערכת
 router.post("/signUp", async(req,res)=>{
-    let validateBody = clientValid(req.body);
+    let validateBody = proffesionalValid(req.body);
     if (validateBody.error) {
         return res.status(400).json(validateBody.error.details)
     }

@@ -3,8 +3,8 @@ const router = express.Router();
 const bcrypt = require("bcrypt");
 const { auth, authAdmin } = require("../middlewares/auth");
 const { ClientModel, clientValid } = require("../models/clientModel");
-const { userValidLogin } = require("../models/userModel");
-
+const { userValidLogin, userModel } = require("../models/userModel");
+const {createToken} =require("../models/userModel")
 // כניסת לקוח קיים למערכת
 router.post("/login", async (req, res) => {
     let validateBody = userValidLogin(req.body);
@@ -12,15 +12,15 @@ router.post("/login", async (req, res) => {
         return res.status(400).json(validateBody.error.details);
     }
     try {
-        let client = await ClientModel.findOne({ email: req.body.email });
-        if (!client) {
+        let user = await userModel.findOne({ email: req.body.email });
+        if (!user) {
             return res.status(401).json({ msg: "Email or password is wrong, code:1" });
         }
-        let validPass = await bcrypt.compare(req.body.password, client.password);
+        let validPass = await bcrypt.compare(req.body.password, user.password);
         if (!validPass) {
             return res.status(401).json({ msg: "Email or password is wrong, code: 2" });
         }
-        let newToken = createToken(client._id, client.role);
+        let newToken = createToken(user._id, user.role);
         res.json({ token: newToken });
     }
     catch (err) {
@@ -31,7 +31,7 @@ router.post("/login", async (req, res) => {
 
 router.get("/count", authAdmin, async (req, res) => {
     try {
-        let count = await UserModel.countDocuments({})
+        let count = await userModel.countDocuments({})
         res.json({ count })
     }
     catch (err) {
