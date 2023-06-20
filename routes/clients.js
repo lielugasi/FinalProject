@@ -33,6 +33,17 @@ router.get("/myInfo", auth, async (req, res) => {
     }
 })
 
+// router.get("/single/:id", async (req, res) => {
+//     try{
+//     let idClient = req.params.id;
+//     let data = await ClientModel.findOne({ _id: idClient },{password:0});
+//     res.json(data);
+//     }
+//     catch(err){
+//       console.log(err);
+//       res.status(500).json({msg:"err",err})
+//     }
+//   })
 //הרשמה של לקוח למערכת
 router.post("/signUp", async(req,res)=>{
     let validateBody = clientValid(req.body);

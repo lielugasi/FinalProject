@@ -21,13 +21,12 @@ const eventSchema = new mongoose.Schema({
 })
 exports.EventModel = mongoose.model("events", eventSchema);
 
-
-
 exports.eventValid = (_reqBody) => {
     joiSchemaEvent = Joi.object({
         type:Joi.string().valid('wedding').required(),
         location: Joi.string().min(2).max(999).required(),
-        date: Joi.date().required()
+        date: Joi.date().required(),
+        proffesionals:Joi.array()
     });
     return joiSchemaEvent.validate(_reqBody);
 }

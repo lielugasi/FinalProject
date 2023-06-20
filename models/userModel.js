@@ -13,9 +13,9 @@ const userSchema = new mongoose.Schema({
     dateCreated: {
         type: Date, default: Date.now()
     },
-    // role: {
-    //     type: String, default: "client"
-    // },
+    role: {
+        type: String, default: "client"
+    },
     active: {
         type: Boolean, default: true,
     },
@@ -29,8 +29,10 @@ exports.createToken = (_id, role) => {
     return token;
 }
 exports.joiSchemaUser = Joi.object({
-    firstName: Joi.string().min(2).max(99).required(),
-    lastName: Joi.string().min(2).max(99).required(),
+    name: Joi.object({
+        firstName: Joi.string().required(),
+        lastName: Joi.string().required()
+    }).required(),
     email: Joi.string().min(2).max(9999).required(),
     password: Joi.string().min(2).max(99999).required(),
     phone: Joi.string().length(10).pattern(/^[0-9]+$/).required()

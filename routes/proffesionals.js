@@ -33,6 +33,18 @@ router.get("/myInfo", auth, async (req, res) => {
     }
 })
 
+router.get("/single/:id", async (req, res) => {
+    try{
+    let idProffesional = req.params.id;
+    let data = await ProffesionalModel.findOne({ _id: idProffesional },{password:0});
+    res.json(data);
+    }
+    catch(err){
+      console.log(err);
+      res.status(500).json({msg:"err",err})
+    }
+  })
+
 //הרשמה של בעל מקצוע למערכת
 router.post("/signUp", async(req,res)=>{
     let validateBody = proffesionalValid(req.body);

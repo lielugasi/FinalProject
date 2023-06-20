@@ -14,9 +14,9 @@ const proffesionalSchema = new mongoose.Schema({
         type: mongoose.ObjectId,
         ref: 'events',
     }],
-    role: {
-        type: String, default: "proffesional"
-    },
+    // role: {
+    //     type: String, default: "proffesional"
+    // },
 })
 exports.ProffesionalModel = userModel.discriminator('proffesionals', proffesionalSchema);
 

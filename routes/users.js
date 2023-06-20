@@ -54,7 +54,7 @@ router.patch("/changeRole/:userID", authAdmin, async (req, res) => {
         return res.status(401).json({ msg: "You cant change superadmin to user" });
   
       }
-      let data = await UserModel.updateOne({ _id: userID }, { role: req.body.role })
+      let data = await userModel.updateOne({ _id: userID }, { role: req.body.role })
       res.json(data);
     }
     catch (err) {

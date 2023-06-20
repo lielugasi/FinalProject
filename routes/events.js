@@ -21,62 +21,182 @@ router.get("/", authAdmin, async (req, res) => {
     }
 })
 
+router.get("/single/:id", auth, async (req, res) => {
+    const eventId = req.params.id;
+
+    try {
+        const event = await EventModel.findById(eventId)
+            .populate({ path: "proffesionals", model: "proffesionals" })
+            .populate({ path: "client_id", model: "clients" });
+
+        if (!event) {
+            return res.status(404).json({ msg: "Event not found" });
+        }
+
+        // Check user access based on role
+        if (req.tokenData.role === "admin") {
+            // Admin can see all events
+            res.json(event);
+        } else if (req.tokenData.role === "client") {
+            // Client can see only their events
+            if (event.client_id.toString() !== req.tokenData._id.toString()) {
+                return res.status(403).json({ msg: "Unauthorized access" });
+            }
+            res.json(event);
+        } else if (req.tokenData.role === "professional") {
+            // Professional can see only events they are part of
+            const professional = await ProfessionalModel.findById(req.tokenData._id);
+            if (!professional) {
+                return res.status(404).json({ msg: "Professional not found" });
+            }
+            if (!professional.events.includes(eventId)) {
+                return res.status(403).json({ msg: "Unauthorized access" });
+            }
+            res.json(event);
+        } else {
+            res.status(403).json({ msg: "Unauthorized access" });
+        }
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ msg: "Internal Server Error", error });
+    }
+});
+
 // יצירת אירוע ושמירת האירוע במערך האירועים של המשתמש והבעל מקצוע
 router.post("/", auth, async (req, res) => {
-    let validateBody = eventValid(req.body);
+    const validateBody = eventValid(req.body);
     if (validateBody.error) {
-        return res.status(400).json(validateBody.error.details)
+        return res.status(400).json(validateBody.error.details);
     }
     try {
-        let event = new EventModel(req.body);
+        const event = new EventModel(req.body);
         event.client_id = req.tokenData._id;
         await event.save();
-        let client = ClientModel.findOne({ _id: req.tokenData._id });
-        client.events.push(event);
+
+        const client = await ClientModel.findOne({ _id: req.tokenData._id });
+        if (!client) {
+            return res.status(404).json({ msg: "Client not found" });
+        }
+
+        client.events.push(event._id);
         await client.save();
-        let proffesionals = ProffesionalModel.find(event.proffesionals.includes(_id));
-        proffesionals.map(async item => {
-            item.events.push(event);
-            await item.save()
-        })
+
+        const professionals = await ProffesionalModel.find({ _id: { $in: event.proffesionals } });
+        const updatePromises = professionals.map(async (professional) => {
+            professional.events.push(event._id);
+            await professional.save();
+        });
+        await Promise.all(updatePromises);
+
         res.status(201).json(event);
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ msg: "Internal Server Error", err });
     }
-    catch (err) {
-        console.log(err);
-        res.status(500).json({ msg: "err", err });
-    }
-})
+});
+
+// router.post("/", auth, async (req, res) => {
+//     let validateBody = eventValid(req.body);
+//     if (validateBody.error) {
+//         return res.status(400).json(validateBody.error.details)
+//     }
+//     try {
+//         let event = new EventModel(req.body);
+//         event.client_id = req.tokenData._id;
+//         await event.save();
+//         let client = ClientModel.findOne({ _id: req.tokenData._id });
+//         client.events.push(event);
+//         await client.save();
+//         let proffesionals = ProffesionalModel.find(event.proffesionals.includes(_id));
+//         proffesionals.map(async item => {
+//             item.events.push(event);
+//             await item.save()
+//         })
+//         res.status(201).json(event);
+//     }
+//     catch (err) {
+//         console.log(err);
+//         res.status(500).json({ msg: "err", err });
+//     }
+// })
 
 router.delete("/:idDel", auth, async (req, res) => {
-    let idDelete = req.params.idDel;
-    let data;
+    const eventId = req.params.idDel;
     try {
-        if (req.tokenData.role == "admin") {
-            data = await EventModel.deleteOne({ _id: idDelete });
+        if (req.tokenData.role === "admin") {
+            // Admin can directly delete the event
+            await EventModel.deleteOne({ _id: eventId });
+        } else {
+            // Find the client and check if the event belongs to them
+            const client = await ClientModel.findOne({ _id: req.tokenData._id });
+            const event = await EventModel.findOne({ _id: eventId });
+            if (!client || !event) {
+                return res.status(404).json({ msg: "Event or Client not found" });
+            }
+
+            if (event.client.toString() !== client._id.toString()) {
+                return res.status(403).json({ msg: "Unauthorized access" });
+            }
+            await EventModel.deleteOne({ _id: eventId });
         }
-        else if (idDelete != req.tokenData._id) {
-            return res.status(403).json({ msg: "Unauthorized access" });
-        }
-        else {
-            data = await EventModel.deleteOne({ _id: idDelete });
-            let client = ClientModel.findOne({ _id: req.tokenData._id });
-            let eventClientIndex = client.events.indexOf(data);
-            client.events.splice(eventClientIndex, 1);
-            await client.save();
-            let proffesionals = ProffesionalModel.find(data.proffesionals.includes(_id));
-            proffesionals.map(async item => {
-                let eventProffesionalIndex = item.events.indexOf(data);
-                item.events.splice(eventProffesionalIndex, 1);
-                await item.save();
-            })
-        }
-        res.json(data);
+        // Delete the event from the client's events array
+        const eventClientIndex = client.events.indexOf(eventId);
+        client.events.splice(eventClientIndex, 1);
+        await client.save();
+
+        // Delete the event from professionals' events arrays
+        const professionals = await ProfessionalModel.find({ _id: { $in: event.professionals } });
+        const deletePromises = professionals.map(async (professional) => {
+            const eventProfessionalIndex = professional.events.indexOf(eventId);
+            professional.events.splice(eventProfessionalIndex, 1);
+            await professional.save();
+        });
+        await Promise.all(deletePromises);
+
+        // Finally, delete the event itself
+
+
+
+        res.json({ msg: "Event deleted successfully" });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ msg: "Internal Server Error", err });
     }
-    catch (err) {
-        console.log(err);
-        res.status(500).json({ msg: "err", err });
-    }
-})
+});
+
+
+
+// router.delete("/:idDel", auth, async (req, res) => {
+//     let idDelete = req.params.idDel;
+//     let data;
+//     try {
+//         if (req.tokenData.role == "admin") {
+//             data = await EventModel.deleteOne({ _id: idDelete });
+//         }
+//         else if (idDelete != req.tokenData._id) {
+//             return res.status(403).json({ msg: "Unauthorized access" });
+//         }
+//         else {
+//             data = await EventModel.deleteOne({ _id: idDelete });
+//             let client = ClientModel.findOne({ _id: req.tokenData._id });
+//             let eventClientIndex = client.events.indexOf(data);
+//             client.events.splice(eventClientIndex, 1);
+//             await client.save();
+//             let proffesionals = ProffesionalModel.find(data.proffesionals.includes(_id));
+//             proffesionals.map(async item => {
+//                 let eventProffesionalIndex = item.events.indexOf(data);
+//                 item.events.splice(eventProffesionalIndex, 1);
+//                 await item.save();
+
+//             })
+//         }
+//         res.json(data);
+//     }
+//     catch (err) {
+//         console.log(err);
+//         res.status(500).json({ msg: "err", err });
+//     }
+// })
 
 //עריכת אירוע-לוגיקה מוגזמת מידי
 // router.put("/:idEdit", auth, async (req, res) => {
