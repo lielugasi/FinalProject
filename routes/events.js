@@ -38,14 +38,18 @@ router.get("/single/:id", auth, async (req, res) => {
             // Admin can see all events
             res.json(event);
         } else if (req.tokenData.role === "client") {
+            console.log(event.client_id._id.toString());
+            console.log(req.tokenData._id.toString());
             // Client can see only their events
-            if (event.client_id.toString() !== req.tokenData._id.toString()) {
+            if (event.client_id._id.toString() !== req.tokenData._id.toString()) {
                 return res.status(403).json({ msg: "Unauthorized access" });
             }
             res.json(event);
-        } else if (req.tokenData.role === "professional") {
+        } else if (req.tokenData.role === "proffesional") {
             // Professional can see only events they are part of
-            const professional = await ProfessionalModel.findById(req.tokenData._id);
+            const professional = await ProffesionalModel.findOne({_id:req.tokenData._id});
+            console.log(professional);
+            console.log(professional.events);
             if (!professional) {
                 return res.status(404).json({ msg: "Professional not found" });
             }
@@ -122,19 +126,21 @@ router.post("/", auth, async (req, res) => {
 
 router.delete("/:idDel", auth, async (req, res) => {
     const eventId = req.params.idDel;
+     const client = await ClientModel.findOne({ _id: req.tokenData._id });
+        const event = await EventModel.findOne({ _id: eventId });
     try {
+       
         if (req.tokenData.role === "admin") {
             // Admin can directly delete the event
             await EventModel.deleteOne({ _id: eventId });
         } else {
             // Find the client and check if the event belongs to them
-            const client = await ClientModel.findOne({ _id: req.tokenData._id });
-            const event = await EventModel.findOne({ _id: eventId });
+
             if (!client || !event) {
                 return res.status(404).json({ msg: "Event or Client not found" });
             }
 
-            if (event.client.toString() !== client._id.toString()) {
+            if (event.client_id.toString() !== client._id.toString()) {
                 return res.status(403).json({ msg: "Unauthorized access" });
             }
             await EventModel.deleteOne({ _id: eventId });
@@ -145,7 +151,7 @@ router.delete("/:idDel", auth, async (req, res) => {
         await client.save();
 
         // Delete the event from professionals' events arrays
-        const professionals = await ProfessionalModel.find({ _id: { $in: event.professionals } });
+        const professionals = await ProffesionalModel.find({ _id: { $in: event.proffesionals } });
         const deletePromises = professionals.map(async (professional) => {
             const eventProfessionalIndex = professional.events.indexOf(eventId);
             professional.events.splice(eventProfessionalIndex, 1);
