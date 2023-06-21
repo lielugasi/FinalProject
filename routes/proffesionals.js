@@ -24,7 +24,7 @@ router.get("/proffesionalsList", auth, async (req, res) => {
 router.get("/myInfo", auth, async (req, res) => {
     try {
         let professional = await ProffesionalModel.findOne({ _id: req.tokenData._id })
-        .populate({ path: "events", model: "events" });
+            .populate({ path: "events", model: "events" });
         res.json(professional);
     }
     catch (err) {
@@ -33,20 +33,101 @@ router.get("/myInfo", auth, async (req, res) => {
     }
 })
 
+// ראוטר שמחזיר פרטי בעל מקצוע בודד לפי id 
 router.get("/single/:id", async (req, res) => {
-    try{
-    let idProffesional = req.params.id;
-    let data = await ProffesionalModel.findOne({ _id: idProffesional },{password:0});
-    res.json(data);
+    try {
+        let idProffesional = req.params.id;
+        let data = await ProffesionalModel.findOne({ _id: idProffesional }, { password: 0 });
+        res.json(data);
     }
-    catch(err){
-      console.log(err);
-      res.status(500).json({msg:"err",err})
+    catch (err) {
+        console.log(err);
+        res.status(500).json({ msg: "err", err })
     }
-  })
+})
+
+
+//מחזיר רשימת בעלי מקצוע לפי טווח מחירים עם אפשרות למיון ורוורס
+router.get("/price", async (req, res) => {
+    let perPage = Math.min(req.query.perPage, 20) || 10;
+    let page = req.query.page || 1;
+    let sort = req.query.sort || "cost";
+    let reverse = req.query.reverse == "yes" ? -1 : 1;
+    const minCost = req.query.minCost;
+    const maxCost = req.query.maxCost;
+
+    try {
+        const professionals = await ProffesionalModel.find({
+            cost: { $gte: minCost, $lte: maxCost }
+        }).limit(perPage)
+            .skip((page - 1) * perPage)
+            .sort({ [sort]: reverse });
+
+        res.json(professionals);
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ msg: "Internal Server Error", error });
+    }
+});
+
+//ראוטר שמחזיר בעלי מקצוע לפי אזור עם אפשרויות מיון
+router.get("/area", async (req, res) => {
+    let perPage = Math.min(req.query.perPage, 20) || 10;
+    let page = req.query.page || 1;
+    let sort = req.query.sort || "cost";
+    let reverse = req.query.reverse == "yes" ? -1 : 1;
+    const area = req.query.area;
+
+    try {
+        const professionals = await ProffesionalModel.find({
+            area: { $regex: new RegExp(area, "i") }
+        }).limit(perPage)
+            .skip((page - 1) * perPage)
+            .sort({ [sort]: reverse });
+
+        res.json(professionals);
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ msg: "Internal Server Error", error });
+    }
+});
+
+// ראוטר שמחזיר בעלי מקצוע לפי קטגוריה
+router.get("/category", async (req, res) => {
+    let perPage = Math.min(req.query.perPage, 20) || 10;
+    let page = req.query.page || 1;
+    let sort = req.query.sort || "cost";
+    let reverse = req.query.reverse == "yes" ? -1 : 1;
+    const category = req.query.category;
+
+    try {
+        const professionals = await ProffesionalModel.find({
+            category: { $regex: new RegExp(category, "i") }
+        }).limit(perPage)
+            .skip((page - 1) * perPage)
+            .sort({ [sort]: reverse });
+
+        res.json(professionals);
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ msg: "Internal Server Error", error });
+    }
+});
+
+//מחזיר כמה בעלי מקצוע פעילים במערכת
+router.get("/count", authAdmin, async (req, res) => {
+    try {
+        let count = await ProffesionalModel.countDocuments({})
+        res.json({ count })
+    }
+    catch (err) {
+        console.log(err)
+        res.status(500).json({ msg: "err", err })
+    }
+})
 
 //הרשמה של בעל מקצוע למערכת
-router.post("/signUp", async(req,res)=>{
+router.post("/signUp", async (req, res) => {
     let validateBody = proffesionalValid(req.body);
     if (validateBody.error) {
         return res.status(400).json(validateBody.error.details)
@@ -65,19 +146,7 @@ router.post("/signUp", async(req,res)=>{
         console.log(err);
         res.status(500).json({ msg: "err", err });
     }
-}) 
-
-//מחזיר כמה בעלי מקצוע פעילים במערכת
-router.get("/count", authAdmin, async (req, res) => {
-    try {
-      let count = await ProffesionalModel.countDocuments({})
-      res.json({ count })
-    }
-    catch (err) {
-      console.log(err)
-      res.status(500).json({ msg: "err", err })
-    }
-  })
+})
 
 // עריכת פרטי בעל מקצוע(אדמין עורך את כולם, בעל מקצוע עורך את עצמו)
 router.put("/:idEdit", auth, async (req, res) => {
