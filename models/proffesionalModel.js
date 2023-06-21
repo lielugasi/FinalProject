@@ -25,7 +25,8 @@ exports.proffesionalValid = (_reqBody) => {
         area: Joi.string().valid('center', 'jerusalem', 'north' ,'south').required(),
         category: Joi.string().min(2).max(99).required(),
         event_type: Joi.array().items(Joi.string().valid('wedding')).min(1),
-        cost: Joi.number().required()
+        cost: Joi.number().required(),
+        role:Joi.string().valid("proffesional").required()
     });
     return joiSchemaProffesional.validate(_reqBody)
 }
