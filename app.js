@@ -10,7 +10,7 @@ app.use(cors());
 app.use(express.json());
 app.use(express.static(path.join(__dirname,"public")));
 routesInit(app);
-let port=process.env.PORT||3000;
+let port=process.env.PORT||3004;
 const server=http.createServer(app);
 server.listen(port);
 
