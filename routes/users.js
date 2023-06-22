@@ -5,6 +5,19 @@ const { auth, authAdmin } = require("../middlewares/auth");
 const { ClientModel, clientValid } = require("../models/clientModel");
 const { userValidLogin, userModel } = require("../models/userModel");
 const {createToken} =require("../models/userModel")
+//הצגת כל המשתמשים במערכת
+router.get("/usersList", auth, async (req, res) => {
+  let perPage = req.query.perPage || 10;
+  try {
+      let data = await userModel.find({}, { password: 0 })
+          .limit(perPage);
+      res.json(data);
+  }
+  catch (err) {
+      console.log(err);
+      res.status(500).json({ msg: "err", err });
+  }
+})
 // כניסת לקוח קיים למערכת
 router.post("/login", async (req, res) => {
     let validateBody = userValidLogin(req.body);
