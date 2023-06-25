@@ -165,7 +165,7 @@ router.put("/:idEdit", authAdmin, async (req, res) => {
 router.delete("/:idDel", authAdmin, async (req, res) => {
   try {
     let idDelete = req.params.idDel;
-    let data= await UserModel.deleteOne({ _id: idDelete });
+    let data= await userModel.deleteOne({ _id: idDelete });
       res.json(data);
   }
   catch (err) {
