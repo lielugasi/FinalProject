@@ -10,6 +10,7 @@ const userSchema = new mongoose.Schema({
     email: String,
     password: String,
     phone: String,
+    img_url:String,
     dateCreated: {
         type: Date, default: Date.now()
     },
@@ -35,7 +36,8 @@ exports.joiSchemaUser = Joi.object({
     }).required(),
     email: Joi.string().min(2).max(9999).required(),
     password: Joi.string().min(2).max(99999).required(),
-    phone: Joi.string().length(10).pattern(/^[0-9]+$/).required()
+    phone: Joi.string().length(10).pattern(/^[0-9]+$/).required(),
+    img_url:Joi.string().min(2).allow(null,""),
 })
 exports.userValid = (_reqBody) => {
     return joiSchemauser.validate(_reqBody);
