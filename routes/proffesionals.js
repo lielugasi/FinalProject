@@ -37,7 +37,7 @@ router.get("/myInfo", auth, async (req, res) => {
 router.get("/single/:id", async (req, res) => {
     try {
         let idProffesional = req.params.id;
-        let data = await ProffesionalModel.findOne({ _id: idProffesional }, { password: 0 });
+        let data = await ProffesionalModel.findOne({ _id: idProffesional });
         res.json(data);
     }
     catch (err) {
