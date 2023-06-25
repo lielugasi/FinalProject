@@ -15,7 +15,7 @@ router.get("/clientsList", authAdmin, async (req, res) => {
     let reverse = req.query.reverse == "yes" ? -1 : 1;
     try {
         let data = await ClientModel.find({}, { password: 0 })
-        .limit(perPage)
+            .limit(perPage)
             .skip((page - 1) * perPage)
             .sort({ [sort]: reverse })
             .populate({ path: "events", model: "events" });
@@ -43,54 +43,44 @@ router.get("/myInfo", auth, async (req, res) => {
 // 
 router.get('/professionals-available', async (req, res) => {
     try {
-        const { start, end } = req.query;
+        const { startDate, endDate } = req.query;
 
-        const professionals = await ProffesionalModel.aggregate([
-            {
-                $match: {
-                    $or: [
-                        // Professionals with no events in the range
-                        {
-                            events: {
-                                $not: {
-                                    $elemMatch: {
-                                        date: {
-                                            $gte: new Date(start),
-                                            $lte: new Date(end)
-                                        }
-                                    }
-                                }
-                            }
-                        },
-                        // Professionals with at least one date without events in the range
-                        {
-                            events: {
-                                $elemMatch: {
-                                    date: {
-                                        $gte: new Date(start),
-                                        $lte: new Date(end)
-                                    }
-                                }
-                            },
-                            events: {
-                                $not: {
-                                    $elemMatch: {
-                                        date: {
-                                            $in: [new Date(start), new Date(end)]
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    ]
+        // Convert start and end date strings to Date objects
+        const start = new Date(startDate);
+        const end = new Date(endDate);
+        console.log(start);
+        console.log(end);
+        // Fetch all professionals
+        const allProfessionals = await ProffesionalModel.find().populate({ path: "events", model: "events" });
+        // Fetch professionals who have events within the given date range
+        const professionalsWithEvents = allProfessionals.filter(proffesional => {
+            // proffesional._doc.events.map(item => console.log(item._doc.date));
+            const proffesionalEvents = proffesional._doc.events.filter(item => (item._doc.date > start && item._doc.date < end) || (item._doc.date.getFullYear() === start.getFullYear() && item._doc.date.getMonth() === start.getMonth() && item._doc.date.getDate() === start.getDate()) || (item._doc.date.getFullYear() === end.getFullYear() && item._doc.date.getMonth() === end.getMonth() && item._doc.date.getDate() === end.getDate()));
+            return proffesionalEvents.length > 0 ? true : false;
+        })
+        console.log(professionalsWithEvents);
+        // Filter professionals who have events on every single date within the range
+        const filteredProfessionals = professionalsWithEvents.filter(professional => {
+            const eventDates = professional.events.map(event => event.date.toDateString());
+            // console.log(eventDates);
+            for (let date = new Date(start); date <= end; date.setDate(date.getDate() + 1)) {
+                // console.log(date);
+                if (!eventDates.includes(date.toDateString())) {
+                    return false;
                 }
             }
-        ]);
+            return true;
+        });
+        console.log(filteredProfessionals);
 
-        res.json(professionals);
-    } catch (error) {
-        console.error('Error retrieving professionals:', error);
-        res.status(500).json({ error: 'Server error' });
+        // Filter professionals who are not in the filteredProfessionals array
+        const remainingProfessionals = allProfessionals.filter(professional => {
+            return !filteredProfessionals.some(filteredProfessional => filteredProfessional._id.equals(professional._id));
+        });
+
+        res.json(remainingProfessionals);
+    } catch (err) {
+        res.status(500).json({ error: err.message });
     }
 });
 
