@@ -18,6 +18,11 @@ router.get("/usersList", auth, async (req, res) => {
       res.status(500).json({ msg: "err", err });
   }
 })
+//מחזיר טוקן של משתמש הכולל תז ותפקיד-אדמין או משהו אחר
+router.get("/checkToken",auth, async(req,res) => {
+  res.json(req.tokenData);
+})
+
 // כניסת לקוח קיים למערכת
 router.post("/login", async (req, res) => {
     let validateBody = userValidLogin(req.body);
