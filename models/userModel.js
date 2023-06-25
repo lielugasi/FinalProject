@@ -40,7 +40,7 @@ exports.joiSchemaUser = Joi.object({
     img_url:Joi.string().min(2).allow(null,""),
 })
 exports.userValid = (_reqBody) => {
-    return joiSchemauser.validate(_reqBody);
+    return exports.joiSchemaUser.validate(_reqBody);
 }
 exports.userValidLogin = (_reqBody) => {
     let joiSchema = Joi.object({

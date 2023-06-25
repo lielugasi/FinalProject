@@ -96,7 +96,7 @@ router.patch("/changeActive/:userID", authAdmin, async (req, res) => {
       return res.status(401).json({ msg: "You cant change superadmin to user" });
 
     }
-    let data = await UserModel.updateOne({ _id: userID }, { active: req.body.active })
+    let data = await userModel.updateOne({ _id: userID }, { active: req.body.active })
     res.json(data);
   }
   catch (err) {
@@ -106,7 +106,7 @@ router.patch("/changeActive/:userID", authAdmin, async (req, res) => {
 })
 // יצירת אדמין חדש
 router.post("/newAdmin", authAdmin, async (req, res) => {
-  let validateBody = clientValid(req.body);
+  let validateBody = userValid(req.body);
   if (validateBody.error) {
     return res.status(400).json(validateBody.error.details)
   }
@@ -116,7 +116,7 @@ router.post("/newAdmin", authAdmin, async (req, res) => {
     user.role = "admin",
       await user.save();
     user.password = "*****";
-    res.status(201).json(client);
+    res.status(201).json(user);
   }
   catch (err) {
     if (err.code == 11000) {
@@ -165,7 +165,7 @@ router.put("/:idEdit", authAdmin, async (req, res) => {
 router.delete("/:idDel", authAdmin, async (req, res) => {
   try {
     let idDelete = req.params.idDel;
-    let data= await ClientModel.deleteOne({ _id: idDelete });
+    let data= await UserModel.deleteOne({ _id: idDelete });
       res.json(data);
   }
   catch (err) {
