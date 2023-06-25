@@ -120,6 +120,20 @@ router.post("/newAdmin", authAdmin, async (req, res) => {
   }
 })
 
+
+// קבלת משתמש לפי איידי
+router.get("/single/:id", authAdmin, async(req,res)=>{
+  try{
+    let idUser = req.params.id;
+    let data = await userModel.findOne({ _id: idUser });
+    res.json(data);
+    }
+    catch(err){
+      console.log(err);
+      res.status(500).json({msg:"err",err})
+    }
+})
+
 // עריכת אדמין
 router.put("/:idEdit", authAdmin, async (req, res) => {
   let validateBody = userValid(req.body);
