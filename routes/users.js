@@ -5,6 +5,13 @@ const { auth, authAdmin } = require("../middlewares/auth");
 const { ClientModel, clientValid } = require("../models/clientModel");
 const { userValidLogin, userModel, userValid } = require("../models/userModel");
 const { createToken } = require("../models/userModel")
+
+
+// ראוט שבודק שהטוקן תקין ומחזיר מידע עליו כגון איי די של המשתמש פלוס התפקיד שלו
+router.get("/checkToken",auth, async(req,res) => {
+  res.json(req.tokenData);
+})
+
 //הצגת כל המשתמשים במערכת
 router.get("/usersList", auth, async (req, res) => {
   let perPage = req.query.perPage || 10;
