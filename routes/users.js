@@ -41,7 +41,7 @@ router.post("/login", async (req, res) => {
       return res.status(401).json({ msg: "Email or password is wrong, code: 2" });
     }
     let newToken = createToken(user._id, user.role);
-    res.json({ token: newToken });
+    res.json({ token: newToken, user });
   }
   catch (err) {
     console.log(err);
