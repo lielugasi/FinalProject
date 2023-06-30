@@ -24,7 +24,13 @@ router.get("/proffesionalsList", auth, async (req, res) => {
 router.get("/myInfo", auth, async (req, res) => {
     try {
         let professional = await ProffesionalModel.findOne({ _id: req.tokenData._id })
-            .populate({ path: "events", model: "events" });
+            .populate({
+                path: "events",
+                model: "events",
+                populate: {
+                    path: "client_id", model: "clients"
+                }
+            });
         res.json(professional);
     }
     catch (err) {
