@@ -132,7 +132,7 @@ router.post("/newAdmin", authAdmin, async (req, res) => {
 router.get("/single/:id", authAdmin, async(req,res)=>{
   try{
     let idUser = req.params.id;
-    let data = await userModel.findOne({ _id: idUser });
+    let data = await userModel.findOne({ _id: idUser },{password:0});
     res.json(data);
     }
     catch(err){

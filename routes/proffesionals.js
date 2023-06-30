@@ -9,7 +9,7 @@ const { ProffesionalModel, proffesionalValid } = require("../models/proffesional
 router.get("/proffesionalsList", auth, async (req, res) => {
     let perPage = req.query.perPage || 10;
     try {
-        let data = await ProffesionalModel.find({}, { password: 0 })
+        let data = await ProffesionalModel.find({ active: true }, { password: 0 })
             .limit(perPage)
             .populate({ path: "events", model: "events" });
         res.json(data);
@@ -58,7 +58,7 @@ router.get("/price", async (req, res) => {
 
     try {
         const professionals = await ProffesionalModel.find({
-            cost: { $gte: minCost, $lte: maxCost }
+            $and: [{ cost: { $gte: minCost, $lte: maxCost } }, { active: true }]
         }).limit(perPage)
             .skip((page - 1) * perPage)
             .sort({ [sort]: reverse });
@@ -80,7 +80,8 @@ router.get("/area", async (req, res) => {
 
     try {
         const professionals = await ProffesionalModel.find({
-            area: { $regex: new RegExp(area, "i") }
+            $and: [{ area: { $regex: new RegExp(area, "i") } }, { active: true }]
+
         }).limit(perPage)
             .skip((page - 1) * perPage)
             .sort({ [sort]: reverse });
@@ -102,7 +103,8 @@ router.get("/category", async (req, res) => {
 
     try {
         const professionals = await ProffesionalModel.find({
-            category: { $regex: new RegExp(category, "i") }
+            $and: [{ category: { $regex: new RegExp(category, "i") } }, { active: true }]
+
         }).limit(perPage)
             .skip((page - 1) * perPage)
             .sort({ [sort]: reverse });
@@ -117,7 +119,7 @@ router.get("/category", async (req, res) => {
 //מחזיר כמה בעלי מקצוע פעילים במערכת
 router.get("/count", authAdmin, async (req, res) => {
     try {
-        let count = await ProffesionalModel.countDocuments({})
+        let count = await ProffesionalModel.countDocuments({active:true})
         res.json({ count })
     }
     catch (err) {
