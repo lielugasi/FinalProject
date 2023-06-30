@@ -14,7 +14,7 @@ router.get("/clientsList", authAdmin, async (req, res) => {
     let sort = req.query.sort || "cost";
     let reverse = req.query.reverse == "yes" ? -1 : 1;
     try {
-        let data = await ClientModel.find({}, { password: 0 })
+        let data = await ClientModel.find({active:true}, { password: 0 })
             .limit(perPage)
             .skip((page - 1) * perPage)
             .sort({ [sort]: reverse })
@@ -64,7 +64,7 @@ router.get('/professionals-available', async (req, res) => {
         console.log(start);
         console.log(end);
         // Fetch all professionals
-        const allProfessionals = await ProffesionalModel.find().populate({ path: "events", model: "events" });
+        const allProfessionals = await ProffesionalModel.find({active:true}).populate({ path: "events", model: "events" });
         // Fetch professionals who have events within the given date range
         const professionalsWithEvents = allProfessionals.filter(proffesional => {
             // proffesional._doc.events.map(item => console.log(item._doc.date));
@@ -168,7 +168,7 @@ router.post("/signUp", async (req, res) => {
 //מחזיר כמה לקוחות פעילים במערכת
 router.get("/count", authAdmin, async (req, res) => {
     try {
-        let count = await ClientModel.countDocuments({})
+        let count = await ClientModel.countDocuments({active:true})
         res.json({ count })
     }
     catch (err) {
