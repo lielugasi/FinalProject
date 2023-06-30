@@ -31,7 +31,14 @@ router.get("/clientsList", authAdmin, async (req, res) => {
 router.get("/myInfo", auth, async (req, res) => {
     try {
         let client = await ClientModel.findOne({ _id: req.tokenData._id })
-            .populate({ path: "events", model: "events" });
+            .populate({
+                path: "events",
+                model: "events",
+                populate: {
+                    path: "proffesionals",
+                    model: "proffesionals"
+                }
+            });
         res.json(client);
     }
     catch (err) {
@@ -134,16 +141,16 @@ router.get('/professionals-available', async (req, res) => {
 
 
 router.get("/single/:id", async (req, res) => {
-    try{
-    let idClient = req.params.id;
-    let data = await ClientModel.findOne({ _id: idClient },{password:0});
-    res.json(data);
+    try {
+        let idClient = req.params.id;
+        let data = await ClientModel.findOne({ _id: idClient }, { password: 0 });
+        res.json(data);
     }
-    catch(err){
-      console.log(err);
-      res.status(500).json({msg:"err",err})
+    catch (err) {
+        console.log(err);
+        res.status(500).json({ msg: "err", err })
     }
-  })
+})
 //הרשמה של לקוח למערכת
 router.post("/signUp", async (req, res) => {
     let validateBody = clientValid(req.body);
