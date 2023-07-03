@@ -15,6 +15,7 @@ const proffesionalSchema = new mongoose.Schema({
         type: mongoose.ObjectId,
         ref: 'events',
     }],
+    ig_url:String
     // role: {
     //     type: String, default: "proffesional"
     // },
@@ -27,7 +28,8 @@ exports.proffesionalValid = (_reqBody) => {
         category: Joi.string().valid('Photographer','Makeup Artist','Hair Stylist','Singer','Band','Event Designer').required(),
         event_type: Joi.array().items(Joi.string().valid('wedding')).min(1),
         cost: Joi.number().required(),
-        role:Joi.string().valid("proffesional").required()
+        role:Joi.string().valid("proffesional").required(),
+        ig_url:Joi.string().min(2).allow(null,"")
     });
     return joiSchemaProffesional.validate(_reqBody)
 }
