@@ -3,7 +3,7 @@ const Joi = require("joi");
 
 const eventSchema = new mongoose.Schema({
     type:{
-        type: String, enum:['wedding']
+        type: String, enum:['Wedding','Bar-Miztva','Bat-Mitzva','Brit','Engagement']
     },
     location: String,
     date: Date,
@@ -23,7 +23,7 @@ exports.EventModel = mongoose.model("events", eventSchema);
 
 exports.eventValid = (_reqBody) => {
     joiSchemaEvent = Joi.object({
-        type:Joi.string().valid('wedding').required(),
+        type:Joi.string().valid('Wedding','Bar-Miztva','Bat-Mitzva','Brit','Engagement').required(),
         location: Joi.string().min(2).max(999).required(),
         date: Joi.date().required(),
         proffesionals:Joi.array()
