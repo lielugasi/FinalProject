@@ -8,9 +8,11 @@ const { ProffesionalModel, proffesionalValid } = require("../models/proffesional
 //הצגת רשימת כל בעלי המקצוע(נדרשת כניסה למערכת)
 router.get("/proffesionalsList", auth, async (req, res) => {
     let perPage = req.query.perPage || 10;
+    let page = req.query.page || 1;
     try {
         let data = await ProffesionalModel.find({ active: true }, { password: 0 })
             .limit(perPage)
+            .skip((page - 1) * perPage)
             .populate({ path: "events", model: "events" });
         res.json(data);
     }

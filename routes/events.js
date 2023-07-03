@@ -8,9 +8,11 @@ const { ProffesionalModel } = require("../models/proffesionalModel");
 
 // ראוטר שמחזיר את רשימת כל האירועים(רק אדמין יכול)
 router.get("/", authAdmin, async (req, res) => {
-    let perPage = req.query.perPage || 20;
+    let page = req.query.page || 1;
+    let perPage = req.query.perPage || 10;
     try {
         let data = await EventModel.find({}).limit(perPage)
+            .skip((page - 1) * perPage)
             //מראה בכל אירוע את הרשימת של בעלי המקצוע והפרטים שלהם וגם את הפרטים של הלקוח 
             .populate({ path: "proffesionals", model: "proffesionals" })
             .populate({ path: "client_id", model: "clients" });
@@ -47,7 +49,7 @@ router.get("/single/:id", auth, async (req, res) => {
             res.json(event);
         } else if (req.tokenData.role === "proffesional") {
             // Professional can see only events they are part of
-            const professional = await ProffesionalModel.findOne({_id:req.tokenData._id});
+            const professional = await ProffesionalModel.findOne({ _id: req.tokenData._id });
             console.log(professional);
             console.log(professional.events);
             if (!professional) {
@@ -77,7 +79,10 @@ router.post("/", auth, async (req, res) => {
         event.client_id = req.tokenData._id;
         await event.save();
 
-        const client = await ClientModel.findOne({ _id: req.tokenData._id });
+        const eventPro = await EventModel.findOne({ _id: event._id })
+            .populate({ path: "proffesionals", model: "proffesionals" });
+
+        const client = await ClientModel.findOne({ _id: req.tokenData._id })
         if (!client) {
             return res.status(404).json({ msg: "Client not found" });
         }
@@ -85,19 +90,30 @@ router.post("/", auth, async (req, res) => {
         client.events.push(event._id);
         await client.save();
 
-        const professionals = await ProffesionalModel.find({ _id: { $in: event.proffesionals } });
+        const professionals = await ProffesionalModel.find({ _id: { $in: event.proffesionals } })
         const updatePromises = professionals.map(async (professional) => {
             professional.events.push(event._id);
             await professional.save();
         });
         await Promise.all(updatePromises);
 
-        res.status(201).json(event);
+        res.status(201).json(eventPro);
     } catch (err) {
         console.error(err);
         res.status(500).json({ msg: "Internal Server Error", err });
     }
 });
+
+router.get("/count", authAdmin, async (req, res) => {
+    try {
+        let count = await EventModel.countDocuments({})
+        res.json({ count })
+    }
+    catch (err) {
+        console.log(err)
+        res.status(500).json({ msg: "err", err })
+    }
+})
 
 // router.post("/", auth, async (req, res) => {
 //     let validateBody = eventValid(req.body);
@@ -126,10 +142,10 @@ router.post("/", auth, async (req, res) => {
 
 router.delete("/:idDel", auth, async (req, res) => {
     const eventId = req.params.idDel;
-     const client = await ClientModel.findOne({ _id: req.tokenData._id });
-        const event = await EventModel.findOne({ _id: eventId });
+    const client = await ClientModel.findOne({ _id: req.tokenData._id });
+    const event = await EventModel.findOne({ _id: eventId });
     try {
-       
+
         if (req.tokenData.role === "admin") {
             // Admin can directly delete the event
             await EventModel.deleteOne({ _id: eventId });
