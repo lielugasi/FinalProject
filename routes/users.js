@@ -15,9 +15,11 @@ router.get("/checkToken",auth, async(req,res) => {
 //הצגת כל המשתמשים במערכת
 router.get("/usersList", auth, async (req, res) => {
   let perPage = req.query.perPage || 10;
+  let page = req.query.page || 1;
   try {
     let data = await userModel.find({}, { password: 0 })
-      .limit(perPage);
+      .limit(perPage)
+      .skip((page - 1) * perPage)
     res.json(data);
   }
   catch (err) {
